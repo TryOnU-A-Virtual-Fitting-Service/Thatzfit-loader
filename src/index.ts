@@ -50,8 +50,8 @@ export const loadScript = () => {
     };
 
     thatzfit.queue = [];
-    thatzfit.command = (args) => {
-      thatzfit.queue?.push(args);
+    thatzfit.command = (...args) => {
+      thatzfit.queue?.push(...args);
     };
     w.Thatzfit = thatzfit;
 
