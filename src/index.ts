@@ -10,6 +10,9 @@ interface IThatzfit {
   queue?: [method: string, ...args: any[]][];
   (...args: any): void;
 }
+export interface BootOption {
+  pluginKey: string;
+}
 
 const isSSR = () => {
   if (typeof window === "undefined") {
@@ -34,61 +37,62 @@ const safeExecuteThatzfit = (...args: unknown[]) => {
   window.Thatzfit.command?.(...args);
 };
 
-export const loadScript = () => {
-  if (isSSR()) {
-    return;
-  }
-
-  (() => {
-    const w = window;
-    if (!!w.Thatzfit) {
+class ThatzfitService {
+  loadScript = () => {
+    if (isSSR()) {
       return;
     }
 
-    const thatzfit: IThatzfit = function () {
-      thatzfit.command?.(...arguments);
-    };
-
-    thatzfit.queue = [];
-    thatzfit.command = (...args) => {
-      thatzfit.queue?.push(...args);
-    };
-    w.Thatzfit = thatzfit;
-
-    const load = () => {
-      if (w.ThatzfitInitialized) {
+    (() => {
+      const w = window;
+      if (!!w.Thatzfit) {
         return;
       }
-      w.ThatzfitInitialized = true;
 
-      const s = document.createElement("script");
-      s.type = "text/javascript";
-      s.defer = true;
-      s.src = "https://cdn.thatzfit.com/plugin/ThatzfitSDKInjector.js";
+      const thatzfit: IThatzfit = function () {
+        thatzfit.command?.(...arguments);
+      };
 
-      const firstScript = document.getElementsByTagName("script")[0];
-      if (firstScript.parentNode) {
-        firstScript.parentNode.insertBefore(s, firstScript);
+      thatzfit.queue = [];
+      thatzfit.command = (...args) => {
+        thatzfit.queue?.push(...args);
+      };
+      w.Thatzfit = thatzfit;
+
+      const load = () => {
+        if (w.ThatzfitInitialized) {
+          return;
+        }
+        w.ThatzfitInitialized = true;
+
+        const s = document.createElement("script");
+        s.type = "text/javascript";
+        s.defer = true;
+        s.src = "https://cdn.thatzfit.com/plugin/ThatzfitSDKInjector.js";
+
+        const firstScript = document.getElementsByTagName("script")[0];
+        if (firstScript.parentNode) {
+          firstScript.parentNode.insertBefore(s, firstScript);
+        }
+      };
+
+      if (document.readyState === "complete") {
+        load();
+      } else {
+        w.addEventListener("DOMContentLoaded", load);
+        w.addEventListener("load", load);
       }
-    };
+    })();
+  };
 
-    if (document.readyState === "complete") {
-      load();
-    } else {
-      w.addEventListener("DOMContentLoaded", load);
-      w.addEventListener("load", load);
-    }
-  })();
-};
+  boot = (option: BootOption) => {
+    safeExecuteThatzfit("boot", option);
+  };
 
-export interface BootOption {
-  pluginKey: string;
+  shutdown = () => {
+    safeExecuteThatzfit("shutdown");
+  };
 }
 
-export const boot = (option: BootOption) => {
-  safeExecuteThatzfit("boot", option);
-};
-
-export const shutdown = () => {
-  safeExecuteThatzfit("shutdown");
-};
+const thatzfitService = new ThatzfitService();
+thatzfitService.loadScript();
