@@ -93,6 +93,11 @@ interface BootOption {
 - `pluginKey`는 고객사별 발급 키를 사용해야 합니다.
 - 동일 페이지에서 로더가 중복 삽입되지 않도록 관리하세요.
 
+## 개선 사항 및 TODO
+
+- npm 패키지로 배포할 수 있도록 배포 파이프라인 및 버전 정책(semver) 정리
+- 고객사 적용 안정성을 위해 단위 테스트/통합 테스트(로더 초기화, 큐 처리, boot/shutdown 호출) 추가
+
 ## 라이선스
 
 - 본 프로젝트 라이선스: `LICENSE` (Apache License 2.0)
