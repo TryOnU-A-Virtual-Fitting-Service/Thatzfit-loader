@@ -1,0 +1,51 @@
+name: Deploy loader to R2
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - codex/r2-asset-automation
+
+concurrency:
+  group: deploy-loader-r2-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      AWS_REGION: auto
+      AWS_DEFAULT_REGION: auto
+      R2_ENDPOINT_URL: ${{ secrets.R2_ENDPOINT_URL }}
+      R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Upload loader
+        run: |
+          test -n "$R2_ENDPOINT_URL"
+          test -n "$R2_BUCKET_NAME"
+          aws s3 cp dist/ThatzfitService.js "s3://$R2_BUCKET_NAME/plugin/ThatzfitService.js" \
+            --endpoint-url "$R2_ENDPOINT_URL" \
+            --cache-control "public, max-age=60"
+
+      - name: Verify upload
+        run: |
+          aws s3 ls "s3://$R2_BUCKET_NAME/plugin/ThatzfitService.js" \
+            --endpoint-url "$R2_ENDPOINT_URL"
