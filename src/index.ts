@@ -68,7 +68,7 @@ class ThatzfitService {
         const s = document.createElement("script");
         s.type = "text/javascript";
         s.defer = true;
-        s.src = "https://cdn.thatz.fit/plugin/ThatzfitSDKInjector.js";
+        s.src = `https://cdn.thatz.fit/plugin/ThatzfitSDKInjector.js?v=${Date.now()}`;
 
         const firstScript = document.getElementsByTagName("script")[0];
         if (firstScript.parentNode) {
