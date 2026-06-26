@@ -2,10 +2,6 @@ name: Deploy loader to R2
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
-      - codex/r2-asset-automation
 
 concurrency:
   group: deploy-loader-r2-${{ github.ref }}
